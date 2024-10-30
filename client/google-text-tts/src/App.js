@@ -1,7 +1,7 @@
 import "./App.css";
 import { useState } from "react";
 import axios from "axios";
-import { modelOptions } from './modelOptions';
+import { modelOptions } from "./modelOptions";
 
 function App() {
   const [text, setText] = useState("");
@@ -16,20 +16,29 @@ function App() {
   const [tooltipVisibleVolume, setTooltipVisibleVolume] = useState(false);
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [optionDropdownOpen, setOptionDropdownOpen] = useState(false);
-
+  const [loading, setLoading] = useState(false);
 
   const handleSynthesize = async () => {
     const backendURL = process.env.REACT_APP_BACKEND_URL;
 
-    const response = await axios.post(`${backendURL}/synthesize`, {
-      text,
-      model_name: modelOption,
-      speaking_rate: speed,
-      pitch,
-      volume_gain_db: volumeGain,
-    });
-    const audioSrc = `data:audio/mp3;base64,${response.data.audioContent}`;
-    setAudioSrc(audioSrc);
+    setLoading(true); // Start loading
+
+    try {
+      const response = await axios.post(`${backendURL}/synthesize`, {
+        text,
+        model_name: modelOption,
+        speaking_rate: speed,
+        pitch,
+        volume_gain_db: volumeGain,
+      });
+      const audioSrc = `data:audio/mp3;base64,${response.data.audioContent}`;
+      setAudioSrc(audioSrc);
+    } catch (error) {
+      console.error("Error during synthesis:", error);
+      // Optionally, handle errors (e.g., set an error state)
+    } finally {
+      setLoading(false); // End loading
+    }
   };
 
   const handleTypeChange = (type) => {
@@ -223,9 +232,12 @@ function App() {
 
       <button
         onClick={handleSynthesize}
-        className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition"
+        className={`px-4 py-2 text-white rounded-lg transition ${
+          loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+        }`}
+        disabled={loading}
       >
-        Synthesize
+        {loading ? "Synthesizing..." : "Synthesize"}
       </button>
 
       {audioSrc && (
