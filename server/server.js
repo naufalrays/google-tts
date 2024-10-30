@@ -6,7 +6,10 @@ require("dotenv").config();
 const app = express();
 app.use(express.json());
 const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS.split(",");
-app.use(cors({ origin: allowedOrigins }));
+app.use(
+  cors({ origin: allowedOrigins, credentials: true })
+);
+app.options('*', cors())
 
 app.post("/synthesize", async (req, res) => {
   const { text, model_name, speaking_rate, pitch, volume_gain_db } = req.body; // Destructure text and model_name from request body
